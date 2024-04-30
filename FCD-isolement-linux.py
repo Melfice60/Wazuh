@@ -12,6 +12,8 @@ import sys
 import json
 import datetime
 from pathlib import PureWindowsPath, PurePosixPath
+import subprocess
+import socket
 
 if os.name == 'nt':
     LOG_FILE = "C:\\Program Files (x86)\\ossec-agent\\active-response\\active-responses.log"
@@ -144,68 +146,64 @@ def main(argv):
 
         """ Start Custom Action Add """
 
-import subprocess
-import socket
+        # Fonction pour récupérer l'adresse IP d'un nom de domaine
+        def get_ip_address(domain):
+            try:
+                ip_address = socket.gethostbyname(domain)
+                return ip_address
+            except socket.gaierror:
+                print(f"Impossible de résoudre l'adresse IP pour le domaine {domain}")
+                exit(1)
 
-# Fonction pour récupérer l'adresse IP d'un nom de domaine
-def get_ip_address(domain):
-    try:
-        ip_address = socket.gethostbyname(domain)
-        return ip_address
-    except socket.gaierror:
-        print(f"Impossible de résoudre l'adresse IP pour le domaine {domain}")
-        exit(1)
+        # Fonction pour récupérer la gateway par défaut
+        def get_default_gateway():
+            try:
+                output = subprocess.check_output(["ip", "route", "show", "default"]).decode("utf-8")
+                lines = output.split('\n')
+                for line in lines:
+                    if line.startswith("default via"):
+                        gateway = line.split()[2]
+                        return gateway
+                raise Exception("Pas de gateway par défaut trouvée")
+            except Exception as e:
+                print(f"Erreur lors de la récupération de la gateway par défaut: {e}")
+                exit(1)
 
-# Fonction pour récupérer la gateway par défaut
-def get_default_gateway():
-    try:
-        output = subprocess.check_output(["ip", "route", "show", "default"]).decode("utf-8")
-        lines = output.split('\n')
-        for line in lines:
-            if line.startswith("default via"):
-                gateway = line.split()[2]
-                return gateway
-        raise Exception("Pas de gateway par défaut trouvée")
-    except Exception as e:
-        print(f"Erreur lors de la récupération de la gateway par défaut: {e}")
-        exit(1)
+        # Fonction pour récupérer l'interface par défaut
+        def get_default_interface():
+            try:
+                output = subprocess.check_output(["ip", "route", "show", "default"]).decode("utf-8")
+                lines = output.split('\n')
+                for line in lines:
+                    if line.startswith("default via"):
+                        interface = line.split()[4]
+                        return interface
+                raise Exception("Pas d'interface par défaut trouvée")
+            except Exception as e:
+                print(f"Erreur lors de la récupération de l'interface par défaut: {e}")
+                exit(1)
 
-# Fonction pour récupérer l'interface par défaut
-def get_default_interface():
-    try:
-        output = subprocess.check_output(["ip", "route", "show", "default"]).decode("utf-8")
-        lines = output.split('\n')
-        for line in lines:
-            if line.startswith("default via"):
-                interface = line.split()[4]
-                return interface
-        raise Exception("Pas d'interface par défaut trouvée")
-    except Exception as e:
-        print(f"Erreur lors de la récupération de l'interface par défaut: {e}")
-        exit(1)
+        # Domaine à résoudre
+        domain = "bastille.francecyberdefense.fr"
 
-# Domaine à résoudre
-domain = "bastille.francecyberdefense.fr"
+        # Récupérer l'adresse IP du domaine
+        external_ip = get_ip_address(domain)
 
-# Récupérer l'adresse IP du domaine
-external_ip = get_ip_address(domain)
+        # Récupérer la gateway par défaut
+        gateway_ip = get_default_gateway()
 
-# Récupérer la gateway par défaut
-gateway_ip = get_default_gateway()
+        # Récupérer l'interface par défaut
+        interface = get_default_interface()
 
-# Récupérer l'interface par défaut
-interface = get_default_interface()
+        # Ajouter la route vers l'adresse IP externe
+        subprocess.run(["ip", "route", "add", external_ip, "via", gateway_ip, "dev", interface])
 
-# Ajouter la route vers l'adresse IP externe
-subprocess.run(["ip", "route", "add", external_ip, "via", gateway_ip, "dev", interface])
+        # Ajouter la route blackhole par défaut
+        subprocess.run(["ip", "route", "add", "blackhole", "default"])
 
-# Ajouter la route blackhole par défaut
-subprocess.run(["ip", "route", "add", "blackhole", "default"])
-
-# Écrire dans /etc/hosts
-with open("/etc/hosts", "a") as hosts_file:
-    hosts_file.write(f"{external_ip}\t{domain}\n")
-
+        # Écrire dans /etc/hosts
+        with open("/etc/hosts", "a") as hosts_file:
+            hosts_file.write(f"{external_ip}\t{domain}\n")
 
         """ End Custom Action Add """
 
@@ -213,67 +211,63 @@ with open("/etc/hosts", "a") as hosts_file:
 
         """ Start Custom Action Delete """
 
-import subprocess
-import socket
+        # Fonction pour récupérer l'adresse IP d'un nom de domaine
+        def get_ip_address(domain):
+            try:
+                ip_address = socket.gethostbyname(domain)
+                return ip_address
+            except socket.gaierror:
+                print(f"Impossible de résoudre l'adresse IP pour le domaine {domain}")
+                exit(1)
 
-# Fonction pour récupérer l'adresse IP d'un nom de domaine
-def get_ip_address(domain):
-    try:
-        ip_address = socket.gethostbyname(domain)
-        return ip_address
-    except socket.gaierror:
-        print(f"Impossible de résoudre l'adresse IP pour le domaine {domain}")
-        exit(1)
+        # Fonction pour récupérer la gateway par défaut
+        def get_default_gateway():
+            try:
+                output = subprocess.check_output(["ip", "route", "show", "default"]).decode("utf-8")
+                lines = output.split('\n')
+                for line in lines:
+                    if line.startswith("default via"):
+                        gateway = line.split()[2]
+                        return gateway
+                raise Exception("Pas de gateway par défaut trouvée")
+            except Exception as e:
+                print(f"Erreur lors de la récupération de la gateway par défaut: {e}")
+                exit(1)
 
-# Fonction pour récupérer la gateway par défaut
-def get_default_gateway():
-    try:
-        output = subprocess.check_output(["ip", "route", "show", "default"]).decode("utf-8")
-        lines = output.split('\n')
-        for line in lines:
-            if line.startswith("default via"):
-                gateway = line.split()[2]
-                return gateway
-        raise Exception("Pas de gateway par défaut trouvée")
-    except Exception as e:
-        print(f"Erreur lors de la récupération de la gateway par défaut: {e}")
-        exit(1)
+        # Fonction pour récupérer l'interface par défaut
+        def get_default_interface():
+            try:
+                output = subprocess.check_output(["ip", "route", "show", "default"]).decode("utf-8")
+                lines = output.split('\n')
+                for line in lines:
+                    if line.startswith("default via"):
+                        interface = line.split()[4]
+                        return interface
+                raise Exception("Pas d'interface par défaut trouvée")
+            except Exception as e:
+                print(f"Erreur lors de la récupération de l'interface par défaut: {e}")
+                exit(1)
 
-# Fonction pour récupérer l'interface par défaut
-def get_default_interface():
-    try:
-        output = subprocess.check_output(["ip", "route", "show", "default"]).decode("utf-8")
-        lines = output.split('\n')
-        for line in lines:
-            if line.startswith("default via"):
-                interface = line.split()[4]
-                return interface
-        raise Exception("Pas d'interface par défaut trouvée")
-    except Exception as e:
-        print(f"Erreur lors de la récupération de l'interface par défaut: {e}")
-        exit(1)
+        # Domaine à résoudre
+        domain = "bastille.francecyberdefense.fr"
 
-# Domaine à résoudre
-domain = "bastille.francecyberdefense.fr"
+        # Récupérer l'adresse IP du domaine
+        external_ip = get_ip_address(domain)
 
-# Récupérer l'adresse IP du domaine
-external_ip = get_ip_address(domain)
+        # Récupérer la gateway par défaut
+        gateway_ip = get_default_gateway()
 
-# Récupérer la gateway par défaut
-gateway_ip = get_default_gateway()
+        # Récupérer l'interface par défaut
+        interface = get_default_interface()
 
-# Récupérer l'interface par défaut
-interface = get_default_interface()
+        # Retirer la route vers l'adresse IP externe
+        subprocess.run(["ip", "route", "del", external_ip])
 
-# Retirer la route vers l'adresse IP externe
-subprocess.run(["ip", "route", "del", external_ip])
+        # Retirer la route blackhole par défaut
+        subprocess.run(["ip", "route", "del", "blackhole", "default"])
 
-# Retirer la route blackhole par défaut
-subprocess.run(["ip", "route", "del", "blackhole", "default"])
-
-# Utiliser sed pour supprimer la ligne contenant "francecyberdefense" dans /etc/hosts
-subprocess.run(["sed", "-i", "/francecyberdefense/d", "/etc/hosts"])
-
+        # Utiliser sed pour supprimer la ligne contenant "francecyberdefense" dans /etc/hosts
+        subprocess.run(["sed", "-i", "/francecyberdefense/d", "/etc/hosts"])
 
         """ End Custom Action Delete """
 
