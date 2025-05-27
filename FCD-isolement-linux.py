@@ -249,7 +249,7 @@ def main(argv):
                 exit(1)
 
         # Domaine à résoudre
-        domain = "bastille.francecyberdefense.fr"
+        domain = "only.authorizeddomain.fr" #change this
 
         # Récupérer l'adresse IP du domaine
         external_ip = get_ip_address(domain)
