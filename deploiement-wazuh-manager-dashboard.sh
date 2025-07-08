@@ -3,13 +3,11 @@
 #Déploiement d'un serveur et dashboard avec wazuh 4.10.1
 #s'assurer que l'archive de certificats  et le dossier d'integrations se trouvent dans le meme dossier
 
-INDEX_NAME='basan-indexer-1'
-NODE_NAME='wazuh-basan-1'  # garder les ' et retirer les <>
-DASHBOARD_NAME='dashboard-wazuh-basan'  # garder les ' et retirer les <>
+NODE_NAME='wazuh-sib'  # garder les ' et retirer les <>
+DASHBOARD_NAME='dashboard-wazuh-sib'  # garder les ' et retirer les <>
 
-echo -e "127.0.0.1 basan-indexer-1.local" >> /etc/hosts
-echo -e "127.0.0.1 wazuh-basan-1.local" >> /etc/hosts
-echo -e "dashboard-basan.local" >> /etc/hosts
+echo -e "127.0.0.1 wazuh-sib.local" >> /etc/hosts
+echo -e "dashboard-sib.local" >> /etc/hosts
 
 #mise a jour des packages pour s'assurer pas de dysfonctionnement
 apt-get install debconf adduser procps
@@ -110,7 +108,3 @@ systemctl daemon-reload
 systemctl enable wazuh-dashboard
 systemctl start wazuh-dashboard
 
-#Desac des possibilités d'update pour ne pas casser la conf
-
-sed -i "s/^deb /#deb /" /etc/apt/sources.list.d/wazuh.list
-apt update
